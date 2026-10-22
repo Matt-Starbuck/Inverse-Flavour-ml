@@ -26,7 +26,7 @@ class VectorisedSMRGE(nn.Module):
     dg2 = b2 * g2**3
     dg3 = b3 * g3**3
 
-    dij = torch.eye(3, dtype=torch.complex64, device)
+    dij = torch.eye(3, dtype=torch.complex64, device=device)
 
     # Compute the Yukawa beta function tensor structures
     Trace = torch.trace(3 * yu @ yu.mH + 3 * yd @ yd.mH) * dij

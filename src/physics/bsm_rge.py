@@ -20,6 +20,7 @@ class LearnedBSMRGE(nn.Module):
     self.delta_t = (self.t_end - self.t_lambda).view(-1,1).to(dtype=torch.complex64, device=device)
 
   def forward(self, t, state):
+        "This puts collects the SM and BSM beta functions, and evolves the yukawas and gauge couplings from them"
         # Extract the batch size.
         batch_size = state.shape[0]
 
@@ -32,37 +33,21 @@ class LearnedBSMRGE(nn.Module):
 
         dij = torch.eye(3, dtype=torch.complex64, device='cpu')
 
-        # Construct the tensor structures in the Yukawa beta functions
-        spur_yu = yu @ yu.mH
-        spur_yd = yd @ yd.mH
-        tr = 3 * torch.einsum('bii->b', spur_yu + spur_yd)
-        Trace_val = tr.view(batch_size, 1, 1) * dij
-        Gu_val = ((17/12 * g1**2 + 9/4 * g2**2 + 8 * g3**2)
-                  .view(batch_size, 1, 1) * dij)
-        Gd_val = ((5/12 * g1**2 + 9/4 * g2**2 + 8 * g3**2)
-                  .view(batch_size, 1, 1) * dij)
+        # Compute the Yukawa beta function tensor structures within the SM
+        Trace = torch.trace(3 * yu @ yu.mH + 3 * yd @ yd.mH) * dij
+        Gu = (17/12 * g1**2 + 9/4 * g2**2 + 8 * g3**2) * dij
+        Gd = (5/12 * g1**2 + 9/4 * g2**2 + 8 * g3**2) * dij
+        Delta_ud = 3/2 * (yu @ yu.mH - yd @ yd.mH)
 
-        # Extract the BSM coefficients for the up sector
-        C1u, C2u, C3u = (self.C[:, 0].view(batch_size, 1, 1),
-                         self.C[:, 1].view(batch_size, 1, 1),
-                         self.C[:, 2].view(batch_size, 1, 1))
-        C1d, C2d, C3d = (self.C[:, 3].view(batch_size, 1, 1),
-                         self.C[:, 4].view(batch_size, 1, 1),
-                         self.C[:, 5].view(batch_size, 1, 1))
-
-        # Compute the MFV beta functions for up sector
-        dyu_bracket = ((Trace_val - Gu_val + C1u * dij)
-                       + (C2u) * spur_yu
-                       + (C3u) * spur_yd)
-        dyd_bracket = ((Trace_val - Gd_val + C1d * dij)
-                       + (C2d) * spur_yu
-                       + (C3d) * spur_yd)
-        dyu_MFV = yu @ dyu_bracket
-        dyd_MFV = yd @ dyd_bracket
+        # Compute the Yukawa coupling beta functions
+        dyu_SM = (yu @ ((Trace - Gu) + Delta_ud)
+        )
+        dyd_SM = (yd @ ((Trace - Gd) - Delta_ud)
+        )
 
         # Multiply the full beta function with the loop factor
-        dyu = loop_factor * (dyu_MFV + self.delta_u)
-        dyd = loop_factor * (dyd_MFV + self.delta_d)
+        dyu = loop_factor * (dyu_SM + self.lambda_q.mH @ self.lambda_u)
+        dyd = loop_factor * (dyd_SM + self.lambda_q.mH @ self.lambda_d)
 
         # Write the gauge beta functions and concatenate into a tensor
         dg1 = loop_factor * (self.b1 * g1**3)
