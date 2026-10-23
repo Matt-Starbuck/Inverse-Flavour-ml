@@ -9,11 +9,16 @@ from torchdiffeq import odeint_adjoint as odeint
 # and provides the intial conditions for the BSM evolution at a particular Lambda scale.
 
 # This first class maps the vector state in the SM to the beta functions for the SM couplings
-class VectorisedSMRGE(nn.Module):
+class SMRGE(nn.Module):
   def __init__(self):
     super().__init__()
 
-  def forward(self, t, state, device='cpu'):
+  def forward(self, t, state):
+
+    # Set device to state device
+    device = state.device
+    type  = state.dtype
+
     # Unpack the 1D state vector into couplings and Yukawa matrices.
     g1 = state[0].real
     g2 = state[1].real
@@ -26,7 +31,7 @@ class VectorisedSMRGE(nn.Module):
     dg2 = b2 * g2**3
     dg3 = b3 * g3**3
 
-    dij = torch.eye(3, dtype=torch.complex64, device=device)
+    dij = torch.eye(3, dtype=type, device=device)
 
     # Compute the Yukawa beta function tensor structures
     Trace = torch.trace(3 * yu @ yu.mH + 3 * yd @ yd.mH) * dij
@@ -35,16 +40,12 @@ class VectorisedSMRGE(nn.Module):
     Delta_ud = 3/2 * (yu @ yu.mH - yd @ yd.mH)
 
     # Compute the Yukawa coupling beta functions
-    dyu = (yu @ ((Trace - Gu) + Delta_ud)
-    )
-    dyd = (yd @ ((Trace - Gd) - Delta_ud)
-    )
+    dyu = yu @ ((Trace - Gu) + Delta_ud)
+    dyd = yd @ ((Trace - Gd) - Delta_ud)
 
     # Concatenate into a single 1D state derivative vector
-    dstate = (torch.cat(
-        [torch.tensor([dg1,dg2,dg3],dtype=torch.complex64).to(device),
-                        dyu.flatten(), dyd.flatten()])
-    )
+    dg = torch.stack([dg1, dg2, dg3]).to(type)
+    dstate = torch.cat([dg, dyu.flatten(), dyd.flatten()])
 
     return dstate * loop_factor
   
