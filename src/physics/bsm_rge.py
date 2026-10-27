@@ -1,22 +1,24 @@
 import math
 import torch
 from torch import nn
-from inputs import b1, b2, b3, loop_factor
+from src.inverse_flavour.inputs import b1, b2, b3, loop_factor
 from torchdiffeq import odeint_adjoint as odeint
 
 
 class LearnedBSMRGE(nn.Module):
-  def __init__(self, b1, b2, b3, log_lambda_batch, device='cpu'):
+  def __init__(self, b1:float, b2:float, b3:float, log_lambda_batch, lambda_q: torch.Tensor, lambda_u: torch.Tensor, lambda_d: torch.Tensor, device='cpu'):
     super().__init__()
 
     self.b1 = b1
     self.b2 = b2
     self.b3 = b3
 
+    batch_size = log_lambda_batch.shape[0]
+
     # Initialize the learnable parameters directly as complex tensors.
-    self.lambda_q = nn.Parameter(torch.randn(3,3, dtype=torch.complex64, device=device) * 1e-4)
-    self.lambda_u = nn.Parameter(torch.randn(3,3, dtype=torch.complex64, device=device) * 1e-4)
-    self.lambda_d = nn.Parameter(torch.randn(3,3, dtype=torch.complex64, device=device) * 1e-4)
+    self.lambda_q = lambda_q # shape [batch_size, 3,3]
+    self.lambda_u = lambda_u # shape [batch_size, 3,3]
+    self.lambda_d = lambda_d # shape [batch_size, 3,3]
 
     # Initialise the MFV parameters as before.
     self.t_end = math.log(1e19)
@@ -52,12 +54,12 @@ class LearnedBSMRGE(nn.Module):
         Delta_ud = 3/2 * (yu @ yu.mH - yd @ yd.mH)
 
         # Compute the Yukawa coupling beta functions
-        dyu_SM = (yu @ ((Trace - Gu) + Delta_ud))
-        dyd_SM = (yd @ ((Trace - Gd) - Delta_ud))
+        dyu_SM = ((Trace - Gu) + Delta_ud @ yu)
+        dyd_SM = (((Trace - Gd) - Delta_ud) @ yd)
 
         # Multiply the full beta function with the loop factor
-        dyu = loop_factor * (dyu_SM + self.lambda_q.mH @ self.lambda_u)
-        dyd = loop_factor * (dyd_SM + self.lambda_q.mH @ self.lambda_d)
+        dyu = loop_factor * (dyu_SM + self.lambda_q @ self.lambda_u.mH)
+        dyd = loop_factor * (dyd_SM + self.lambda_q @ self.lambda_d.mH)
 
         # Write the gauge beta functions and concatenate into a tensor
         dg1 = loop_factor * (self.b1 * g1**3)

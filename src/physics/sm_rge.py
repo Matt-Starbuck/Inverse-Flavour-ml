@@ -49,7 +49,7 @@ class SMRGE(nn.Module):
 
     return dstate * loop_factor
   
-def SM_at_Lambda(Lambda_batch, SM_dense_traj, t_eval_SM):
+def sm_at_Lambda(Lambda_batch, SM_dense_traj, t_eval_SM):
   "Takes in a dense trajctory of the SM states upto scale t_eval_SM, along with a batch of Lambda scales, and returns the SM states as close to the Lambda scales as possible "
   idx = torch.bucketize(Lambda_batch, t_eval_SM) -1
   idx = torch.clamp(idx, 0, len(t_eval_SM)-2)

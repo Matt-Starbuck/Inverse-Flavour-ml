@@ -10,9 +10,9 @@ def Lambda_sample(batch_size: int,
                   device: str ='cpu'
                   ):
     " Creates a sample of Lambda values in the range[Lambda_min, Lambda_max]"
+    log_min = math.log(lambda_min)
+    log_max = math.log(lambda_max)
     if mode == 'log_grid':
-        log_min = math.log(lambda_min)
-        log_max = math.log(lambda_max)
         return torch.linspace(log_min, log_max, steps=batch_size, device=device)
     elif mode == 'log_uniform':
         seed = torch.rand(batch_size, device=device)
