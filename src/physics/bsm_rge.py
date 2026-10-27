@@ -23,7 +23,7 @@ class LearnedBSMRGE(nn.Module):
     # Initialise the MFV parameters as before.
     self.t_end = math.log(1e19)
     self.t_lambda = log_lambda_batch
-    self.register_buffer('delta_t', (self.t_end - self.t_lambda).view(-1, 1)).to(torch.complex64)
+    self.register_buffer('delta_t', (self.t_end - self.t_lambda).view(-1, 1).to(torch.complex64))
 
   def forward(self, t, state):
         "This puts collects the SM and BSM beta functions, and evolves the yukawas and gauge couplings from them"
@@ -54,8 +54,8 @@ class LearnedBSMRGE(nn.Module):
         Delta_ud = 3/2 * (yu @ yu.mH - yd @ yd.mH)
 
         # Compute the Yukawa coupling beta functions
-        dyu_SM = ((Trace - Gu) + Delta_ud @ yu)
-        dyd_SM = (((Trace - Gd) - Delta_ud) @ yd)
+        dyu_SM = ((Trace - Gu) + Delta_ud)@ yu
+        dyd_SM = ((Trace - Gd) - Delta_ud)@ yd
 
         # Multiply the full beta function with the loop factor
         dyu = loop_factor * (dyu_SM + self.lambda_q @ self.lambda_u.mH)

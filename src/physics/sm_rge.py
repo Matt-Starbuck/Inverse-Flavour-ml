@@ -40,8 +40,8 @@ class SMRGE(nn.Module):
     Delta_ud = 3/2 * (yu @ yu.mH - yd @ yd.mH)
 
     # Compute the Yukawa coupling beta functions
-    dyu = yu @ ((Trace - Gu) + Delta_ud)
-    dyd = yd @ ((Trace - Gd) - Delta_ud)
+    dyu = ((Trace - Gu) + Delta_ud) @ yu
+    dyd = ((Trace - Gd) - Delta_ud) @ yd
 
     # Concatenate into a single 1D state derivative vector
     dg = torch.stack([dg1, dg2, dg3]).to(type)

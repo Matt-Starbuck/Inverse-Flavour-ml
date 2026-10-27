@@ -2,7 +2,7 @@ from src.inverse_flavour.inputs import init_state_sm
 from src.physics.sm_rge import SMRGE
 from src.physics.sm_rge import sm_at_Lambda
 import torchdiffeq
-from torchdiffeq import odeint_adjoint as odeint
+from torchdiffeq import odeint
 import torch
 import math
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     Lambda_max = 100000.0
     t_start = torch.tensor(math.log(3000.0), dtype=torch.float64, device=device)
     t_max_lambda = torch.tensor(math.log(1e5), dtype=torch.float64, device=device)
-    t_eval_SM = torch.linspace(t_start, t_max_lambda, 1000, dtype=torch.float64, device=device)
+    t_eval_SM = torch.linspace(t_start, t_max_lambda, 1000, dtype=torch.float32, device=device)
     sm_model = SMRGE().to(device)
     sm_dense_traj = odeint(sm_model, sm_init_state, t_eval_SM, method='rk4')
     
