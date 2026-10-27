@@ -1,6 +1,6 @@
 import math 
 import torch 
-from src.inverse_flavour.inputs import V_CKM
+from src.inverse_flavour.inputs import CKM_device
 
 # This script contains LEFT Wilson coefficient constraints, and functions that 
 # compute whether a set of lambdas satisfy these constraints. 
@@ -37,7 +37,7 @@ def compute_eft_violation_ratios(
     inv_lambda_sq = torch.exp(-2.0 * log_lambda_batch)
 
     # Ensure V_CKM is on the same device/dtype as lambda_q
-    V_CKM = V_CKM.to(device=lambda_q.device, dtype=lambda_q.dtype)
+    V_CKM = CKM_device(device=lambda_q.device).to(lambda_q.dtype)
 
     lambda_q_d = lambda_q @ V_CKM
 

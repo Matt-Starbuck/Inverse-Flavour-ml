@@ -23,7 +23,7 @@ class LearnedBSMRGE(nn.Module):
     # Initialise the MFV parameters as before.
     self.t_end = math.log(1e19)
     self.t_lambda = log_lambda_batch
-    self.resigster_buffer('delta_t', (self.t_end - self.t_lambda).view(-1, 1))
+    self.register_buffer('delta_t', (self.t_end - self.t_lambda).view(-1, 1)).to(torch.complex64)
 
   def forward(self, t, state):
         "This puts collects the SM and BSM beta functions, and evolves the yukawas and gauge couplings from them"

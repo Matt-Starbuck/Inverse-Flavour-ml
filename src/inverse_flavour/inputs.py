@@ -57,6 +57,16 @@ def yukawas_to_device(device='cpu'):
 
     return y_u_3tev.flatten(), y_d_3tev.flatten()
 
+def CKM_device(device='cpu'):
+    "returns the CKM matrix on the current device "
+    VCKM_mean = (torch.tensor([
+        [0.9743355 +0.0j,              0.22506836+0.0j, 0.00156066-3.48431162e-03j],
+        [-0.2249448 -1.38439423e-04j,  0.97351783-3.19790606e-05j,0.04077819+0.0j],
+        [0.00765866-3.39208938e-03j, -0.04008318-7.83561716e-04j, 0.99916093+0.0j]
+        ], dtype=torch.complex64)
+    ).to(device)
+    return VCKM_mean
+
 def init_state_sm(device='cpu'):
     "Initialises (g1,g2,g3,y_u,y_d) flattened at mu=3TeV. This is the intial input for the ODE solver."
     y_u_3tev, y_d_3tev = yukawas_to_device(device)

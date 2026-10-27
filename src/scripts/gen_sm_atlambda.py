@@ -16,12 +16,14 @@ if __name__ == "__main__":
     
     # Initialise the SM state at the scale mu=3TeV and put it on the device.
     sm_init_state = init_state_sm(device=device)
-    sm_traj = odeint(SMRGE().to(device), sm_init_state, torch.tensor([math.log(3000.0)], device=device), method='dopri5', options={'step_size': 1e-2})
 
     # Create a dense trajectory of the SM evolution from mu=3TeV to a high scale.
     Lambda_max = 100000.0
-    t_eval_SM = torch.linspace(math.log(3000.0), math.log(Lambda_max), steps=1000, device=device)
-
+    t_start = torch.tensor(math.log(3000.0), dtype=torch.float64, device=device)
+    t_max_lambda = torch.tensor(math.log(1e5), dtype=torch.float64, device=device)
+    t_eval_SM = torch.linspace(t_start, t_max_lambda, 1000, dtype=torch.float64, device=device)
+    sm_model = SMRGE().to(device)
+    sm_dense_traj = odeint(sm_model, sm_init_state, t_eval_SM, method='rk4')
     
     # Initialise a set of BSM scales (Lambda) for the training data.
     batch_size= 100
@@ -30,5 +32,5 @@ if __name__ == "__main__":
     log_lambda_batch = torch.linspace(math.log(Lambda_min), math.log(Lambda_max), steps=batch_size, device=device)
 
     # For each Lambda, have the initial SM state at this scale to prepare for the BSM evolution.
-    bsm_init_states = sm_at_Lambda(log_lambda_batch, sm_traj.squeeze(1), t_eval_SM)
+    bsm_init_states = sm_at_Lambda(log_lambda_batch, sm_dense_traj.squeeze(1), t_eval_SM)
 
