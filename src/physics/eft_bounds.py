@@ -39,7 +39,7 @@ def compute_eft_violation_ratios(
     # Ensure V_CKM is on the same device/dtype as lambda_q
     V_CKM = CKM_device(device=lambda_q.device).to(lambda_q.dtype)
 
-    lambda_q_d = V_CKM @ lambda_q
+    lambda_q_d = V_CKM.mH @ lambda_q
 
     # Construct the flavour combinations M = lambda^\dagger @ lambda of shape [batch_size, 3, 3]
     M_u = lambda_u @ lambda_u.mH
