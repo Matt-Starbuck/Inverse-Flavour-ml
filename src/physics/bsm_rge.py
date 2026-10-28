@@ -2,10 +2,9 @@ import math
 import torch
 from torch import nn
 from src.inverse_flavour.inputs import b1, b2, b3, loop_factor
-from torchdiffeq import odeint_adjoint as odeint
 
 
-class LearnedBSMRGE(nn.Module):
+class BSMRGE(nn.Module):
   def __init__(self, b1:float, b2:float, b3:float, log_lambda_batch, lambda_q: torch.Tensor, lambda_u: torch.Tensor, lambda_d: torch.Tensor, device='cpu'):
     super().__init__()
 

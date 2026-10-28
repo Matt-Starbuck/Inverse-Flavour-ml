@@ -19,7 +19,7 @@ C_uu_run2_max = 4.4e-8  # GeV^-2
 C_dd_run2_max = 1.1e-7  # GeV^-2
 C_qq_run2_max = 3.7e-8  # GeV^-2
 
-# The flavour basis used throughout is the up-mass basis, and so the Wilson coefficients for down types will need to be rotated by the CKM.
+# The flavour basis for qL used throughout is the up-mass basis, and so the Wilson coefficients for down type coefficients will need to be rotated by the CKM.
 
 def compute_eft_violation_ratios(
     lambda_q: torch.Tensor,
@@ -39,7 +39,7 @@ def compute_eft_violation_ratios(
     # Ensure V_CKM is on the same device/dtype as lambda_q
     V_CKM = CKM_device(device=lambda_q.device).to(lambda_q.dtype)
 
-    lambda_q_d = lambda_q @ V_CKM
+    lambda_q_d = V_CKM @ lambda_q
 
     # Construct the flavour combinations M = lambda^\dagger @ lambda of shape [batch_size, 3, 3]
     M_u = lambda_u @ lambda_u.mH
