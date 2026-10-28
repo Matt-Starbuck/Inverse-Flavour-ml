@@ -42,10 +42,10 @@ def compute_eft_violation_ratios(
     lambda_q_d = lambda_q @ V_CKM
 
     # Construct the flavour combinations M = lambda^\dagger @ lambda of shape [batch_size, 3, 3]
-    M_u = lambda_u.mH @ lambda_u
-    M_d = lambda_d.mH @ lambda_d
-    M_q_u = lambda_q.mH @ lambda_q
-    M_q_d = lambda_q_d.mH @ lambda_q_d
+    M_u = lambda_u @ lambda_u.mH
+    M_d = lambda_d @ lambda_d.mH
+    M_q_u = lambda_q @ lambda_q.mH
+    M_q_d = lambda_q_d @ lambda_q_d.mH
 
     # Delta F = 2 Wilson coefficients: C_{ij} = (M_{ij})^2 / Lambda^2 (complex!)
     C_cu_pred = ((M_u[:, 0, 1] ** 2) + (M_q_u[:, 0, 1] ** 2)) * inv_lambda_sq
