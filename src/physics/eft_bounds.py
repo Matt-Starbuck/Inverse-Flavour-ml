@@ -69,9 +69,3 @@ def compute_eft_violation_ratios(
         "qq": torch.abs(C_qq_pred) / C_qq_run2_max,
     }
     return ratios
-
-
-
- 
-
-    
