@@ -30,8 +30,8 @@ def compute_eft_violation_ratios(
 ) -> dict[str, torch.Tensor]:
     """
     Computes the dimensionless ratio |C_pred| / C_max for each EFT constraint across the batch.
+    The bounds correspond to a 95% confidence interval. We will use a simplified rejection criteria that requires all bounds to be within this interval.
     A ratio <= 1.0 means the constraint is satisfied; > 1.0 means it is violated.
-    Fully differentiable for use in the training loss function.
     """
     # Scale factor 1 / Lambda^2 of shape [batch_size]
     inv_lambda_sq = torch.exp(-2.0 * log_lambda_batch)
