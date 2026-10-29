@@ -28,7 +28,8 @@ class BSMInitialState:
         """ Takes in lambda batch and returns the intial BSM states for each of the Lambdas
         """
         full_sm_at_Lambda = sm_at_Lambda(log_lambda_batch, self.sm_dense_traj, self.t_eval_SM)
-        sm_at_Lambda_train = full_sm_at_Lambda[:split,...]
-        sm_at_Lambda_test = full_sm_at_Lambda[split:,...]
+        train_split = int(0.8 * log_lambda_batch.shape[0])
+        sm_at_Lambda_train = full_sm_at_Lambda[:train_split,...]
+        sm_at_Lambda_test = full_sm_at_Lambda[train_split:,...]
         return sm_at_Lambda_train, sm_at_Lambda_test
     

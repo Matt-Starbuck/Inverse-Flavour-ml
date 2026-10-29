@@ -17,19 +17,16 @@ def hierarchy_loss(bsm_init_states,
                                   lambda_q, lambda_u, lambda_d,  n_steps)
     
     # extract the up and down yukawas and reshape them into matrices
-    yu_mpl, yd_ml = mpl_state[..., 3:12], mpl_state[...,12:21]
+    yu_mpl, yd_mpl = mpl_state[...,1], mpl_state[...,2]
 
-    yu_mpl = torch.reshape(yu_mpl, (...,3,3))
-    yd_mpl = torch.reshape(yd_mpl, (...,3,3))
+    yu_vals = torch.linalg.svdvals(yu_mpl)
+    yd_vals = torch.linalg.svdvals(yd_mpl)
 
-    yu_vals = torch.linalg.svdvals(yu_mpl, full_matrices=True)
-    yd_vals = torch.linalg.svdvals(yd_mpl, full_matrices=True)
-
-    yu3_yu2 = yu_vals[...,2] / yu_vals[...,1]
-    yu2_yu1 = yu_vals[...,1] / yu_vals[...,0]
+    yu3_yu2 = yu_vals[...,0] / yu_vals[...,1]
+    yu2_yu1 = yu_vals[...,1] / yu_vals[...,2]
     
-    yd3_yd2 = yd_vals[...,2] / yd_vals[...,1]
-    yd2_yd1 = yd_vals[...,1] / yd_vals[...,0]
+    yd3_yd2 = yd_vals[...,0] / yd_vals[...,1]
+    yd2_yd1 = yd_vals[...,1] / yd_vals[...,2]
 
     return yu3_yu2, yu2_yu1, yd3_yd2, yd2_yd1
 

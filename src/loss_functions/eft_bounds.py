@@ -26,7 +26,6 @@ def compute_eft_violation_ratios(
     lambda_u: torch.Tensor,
     lambda_d: torch.Tensor,
     log_lambda_batch: torch.Tensor,
-    V_CKM: torch.Tensor,
 ) -> dict[str, torch.Tensor]:
     """
     Computes the dimensionless ratio |C_pred| / C_max for each EFT constraint across the batch.
