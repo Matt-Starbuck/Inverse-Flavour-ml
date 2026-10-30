@@ -29,3 +29,5 @@ def combined_loss(bsm_init_states,
     # Combine into total loss function with theta weighting
 
     tot_loss = theta * h_loss + (1- theta) * p_loss
+
+    return tot_loss
