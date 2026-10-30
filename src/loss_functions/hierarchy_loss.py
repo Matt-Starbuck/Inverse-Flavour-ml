@@ -22,13 +22,21 @@ def hierarchy_loss(bsm_init_states,
     yu_vals = torch.linalg.svdvals(yu_mpl)
     yd_vals = torch.linalg.svdvals(yd_mpl)
 
-    yu3_yu2 = yu_vals[...,0] / yu_vals[...,1]
-    yu2_yu1 = yu_vals[...,1] / yu_vals[...,2]
+    # Want to aim this towards zero, and therefore take the log of it.
+    yu3_yu2 = torch.log(yu_vals[...,0] / yu_vals[...,1])
+    yu2_yu1 = torch.log(yu_vals[...,1] / yu_vals[...,2])
     
-    yd3_yd2 = yd_vals[...,0] / yd_vals[...,1]
-    yd2_yd1 = yd_vals[...,1] / yd_vals[...,2]
+    yd3_yd2 = torch.log(yd_vals[...,0] / yd_vals[...,1])
+    yd2_yd1 = torch.log(yd_vals[...,1] / yd_vals[...,2])
 
-    return yu3_yu2, yu2_yu1, yd3_yd2, yd2_yd1
+    losses = {
+            "up_32": yu3_yu2,
+            "up_21": yu2_yu1,
+            "down_32": yd3_yd2,
+            "down_21": yd2_yd1
+    }
+
+    return losses
 
 
 

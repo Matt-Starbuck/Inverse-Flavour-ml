@@ -4,7 +4,7 @@ from torchdiffeq import odeint
 from src.inverse_flavour.inputs import init_state_sm, CKM_device
 from src.physics.sm_rge import SMRGE, sm_at_Lambda
 from src.physics.bsm_rge import evolve_bsm_batch
-from src.physics.eft_bounds import compute_eft_violation_ratios
+from src.loss_functions.eft_bounds import compute_eft_violation_ratios
 
 def am_gm_hierarchy_loss(Y: torch.Tensor) -> torch.Tensor:
     """Basis-invariant hierarchy metric: 0 iff all singular values are equal."""
