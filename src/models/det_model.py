@@ -38,21 +38,3 @@ def reshape_output(output: torch.Tensor, batch_size: int):
     lam_u = lam_u_bare[...,0,:,:] + 1j * lam_u_bare[..., 1, :, :]
     lam_d = lam_d_bare[...,0,:,:] + 1j * lam_d_bare[..., 1, :, :]
     return lam_q, lam_u, lam_d
-######### Basic tests: to be incorporated into a proper test file later.
-
-model_0 = DetModel(input_dim=1, hidden_dim=108, output_dim=54)
-print(model_0.state_dict())
-
-x_test = torch.Tensor([[0.1]])
-output_test = model_0(torch.Tensor(x_test))
-better_format = torch.reshape(output_test,( 3, 2, 3, 3))
-lam_q_test, lam_u_test, lam_d_test = better_format[0,...], better_format[1,...], better_format[2,...]
-
-
-print("This is the current output of the model:", output_test)
-print("This is the shape of the outout:", output_test.shape)
-print("This is the reshaped output", better_format)
-print("This is the shape", better_format.shape)
-lam_q_test = lam_q_test[0,...] + 1j * lam_q_test[1,...]
-print("This is the test lambda_q matrix:", lam_q_test)
-
