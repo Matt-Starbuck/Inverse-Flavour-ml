@@ -29,7 +29,7 @@ def combined_loss(bsm_init_states,
     # punish the loss for choosing large coupling values
     pert_loss = (torch.exp(torch.max(torch.abs(lambda_q)) / (2 * torch.pi)) 
                  + torch.exp(torch.max(torch.abs(lambda_u)) / (2 * torch.pi)) 
-                 + torch.exp(torch.max(torch.abs(lambda_d)) / (2 * torch.pi)))
+                 + torch.exp(torch.max(torch.abs(lambda_d)) / (2 * torch.pi)) -3)
                           
 
     # Combine into total loss function with theta weighting

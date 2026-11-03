@@ -22,6 +22,8 @@ class DetModel(nn.Module):
             nn.Linear(self.hidden_dim, self.output_dim)
         )
     def forward(self, x):
+        x = 2*(x- torch.min(x)) / (torch.max(x)-torch.min(x)) - 1
+        x = torch.unsqueeze(x, dim=1)  # Ensure input is of shape (batch_size, 1)
         return self.model(x)
     
 
