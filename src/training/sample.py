@@ -3,7 +3,7 @@ import torch
 
 # This script contains functions to generate a Lambda_batch, corresponding to different BSM scales. 
 
-def Lambda_sample(batch_size: int,
+def Lambda_sample(sample_size: int,
                   lambda_min: float =3000.0,
                   lambda_max: float =100000.0, 
                   mode: str ='log_grid',
@@ -13,8 +13,8 @@ def Lambda_sample(batch_size: int,
     log_min = math.log(lambda_min)
     log_max = math.log(lambda_max)
     if mode == 'log_grid':
-        return torch.linspace(log_min, log_max, steps=batch_size, device=device)
+        return torch.linspace(log_min, log_max, steps=sample_size, device=device)
     elif mode == 'log_uniform':
-        seed = torch.rand(batch_size, device=device)
+        seed = torch.rand(sample_size, device=device)
         return log_min +(log_max - log_max) * seed
 
