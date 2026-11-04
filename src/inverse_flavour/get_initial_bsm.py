@@ -27,9 +27,13 @@ class BSMInitialState:
     def get_init_states_train_test(self, log_lambda_batch: torch.Tensor, split: float=0.8) -> torch.Tensor:
         """ Takes in lambda batch and returns the intial BSM states for each of the Lambdas
         """
-        full_sm_at_Lambda = sm_at_Lambda(log_lambda_batch, self.sm_dense_traj, self.t_eval_SM)
-        train_split = int(0.8 * log_lambda_batch.shape[0])
-        sm_at_Lambda_train = full_sm_at_Lambda[:train_split,...]
-        sm_at_Lambda_test = full_sm_at_Lambda[train_split:,...]
-        return sm_at_Lambda_train, sm_at_Lambda_test
+        if split ==1.0:
+            full_sm_at_Lambda = sm_at_Lambda(log_lambda_batch, self.sm_dense_traj, self.t_eval_SM)
+            return full_sm_at_Lambda
+        else:
+            full_sm_at_Lambda = sm_at_Lambda(log_lambda_batch, self.sm_dense_traj, self.t_eval_SM)
+            train_split = int(0.8 * log_lambda_batch.shape[0])
+            sm_at_Lambda_train = full_sm_at_Lambda[:train_split,...]
+            sm_at_Lambda_test = full_sm_at_Lambda[train_split:,...]
+            return sm_at_Lambda_train, sm_at_Lambda_test
     
