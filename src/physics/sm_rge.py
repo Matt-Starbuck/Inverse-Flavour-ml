@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from src.inverse_flavour.inputs import b1, b2, b3, loop_factor
-from torchdiffeq import odeint_adjoint as odeint
+from torchdiffeq import odeint
 
 # This scipts contains classses to both evolve the SM gauge and Yukawa couplings,
 # and to extract the state of these couplings at the relevant scale Lambda.
@@ -17,7 +17,7 @@ class SMRGE(nn.Module):
 
     # Set device to state device
     device = state.device
-    type  = state.dtype
+    dtype  = state.dtype
 
     # Unpack the 1D state vector into couplings and Yukawa matrices.
     g1 = state[0].real
@@ -31,7 +31,7 @@ class SMRGE(nn.Module):
     dg2 = b2 * g2**3
     dg3 = b3 * g3**3
 
-    dij = torch.eye(3, dtype=type, device=device)
+    dij = torch.eye(3, dtype=dtype, device=device)
 
     # Compute the Yukawa beta function tensor structures
     Trace = torch.trace(3 * yu @ yu.mH + 3 * yd @ yd.mH) * dij
@@ -44,7 +44,7 @@ class SMRGE(nn.Module):
     dyd = ((Trace - Gd) - Delta_ud) @ yd
 
     # Concatenate into a single 1D state derivative vector
-    dg = torch.stack([dg1, dg2, dg3]).to(type)
+    dg = torch.stack([dg1, dg2, dg3]).to(dtype)
     dstate = torch.cat([dg, dyu.flatten(), dyd.flatten()])
 
     return dstate * loop_factor

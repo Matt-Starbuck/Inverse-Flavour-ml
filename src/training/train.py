@@ -7,7 +7,7 @@ from src.training.sample import Lambda_sample
 import math
 
 # To save the model to PATH switch save to "ON"
-save = "OFF"
+save = "ON"
 PATH = "src/training/det_model.pt"
 
 torch.manual_seed(42)
@@ -16,23 +16,26 @@ if torch.cuda.is_available():
 else:
     device = "cpu"
 
-model_0 = DetModel().to(device)
-
-# Start the parameters small! Otherwise they will run the yukawas to a Landau pole.
-with torch.no_grad():
-    for p in model_0.parameters():
-        nn.init.normal_(p, mean=0.0, std=0.01)
-
-optimizer = torch.optim.Adam(model_0.parameters(), lr=5e-5)
+# Set configurations for the training run
 epochs = 100
 sample_size = 100
 batch_size = 8
 loss_fn = combined_loss
+lambda_min = 3000.0
+lambda_max = 100000.0
+
+# Initiate the model, initial parameter sizes, and optimizer
+model_0 = DetModel(lambda_min=lambda_min, lambda_max=lambda_max).to(device)
+# Start the parameters small! Otherwise they will run the yukawas to a Landau pole.
+with torch.no_grad():
+    for p in model_0.parameters():
+        nn.init.normal_(p, mean=0.0, std=0.01)
+optimizer = torch.optim.Adam(model_0.parameters(), lr=5e-5)
 
 # Quick print test of the sampled Lambda values
-Lambda_batch = Lambda_sample(sample_size=sample_size, lambda_min=3000.0, lambda_max=100000.0, mode='log_grid')
+Lambda_batch = Lambda_sample(sample_size=sample_size, lambda_min=lambda_min, lambda_max=lambda_max, mode='log_grid')
 idx_split = 0.8
-state_obj = BSMInitialState(lambda_min=3000.0, lambda_max=100000.0, steps=100, device=device)
+state_obj = BSMInitialState(lambda_min=lambda_min, lambda_max=lambda_max, steps=100, device=device)
 init_states_train, init_states_test = state_obj.get_init_states_train_test(Lambda_batch, split=idx_split)
 Lambda_train, Lambda_test = Lambda_batch[:int(idx_split * Lambda_batch.shape[0]),...], Lambda_batch[int(idx_split * Lambda_batch.shape[0]):,...]
 
@@ -69,5 +72,6 @@ for epoch in range(epochs):
 # Save the model if save is on
 if save == "ON":
     torch.save(model_0.state_dict(), PATH)
+    print(f"Model saved successfully to {PATH}")
 
 

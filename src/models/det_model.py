@@ -8,11 +8,17 @@ import math
 
 
 class DetModel(nn.Module):
-    def __init__(self, input_dim: int =1, hidden_dim: int = 108, output_dim: int=54):
+    def __init__(self, input_dim: int =1,
+                hidden_dim: int = 108,
+                output_dim: int=54,
+                lambda_min: float = 3000.0,
+                lambda_max: float = 100000.0):
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
+        self.Lambda_min = math.log(lambda_min)
+        self.Lambda_max = math.log(lambda_max)
 
         self.model = nn.Sequential(
             nn.Linear(self.input_dim, self.hidden_dim),
@@ -22,7 +28,9 @@ class DetModel(nn.Module):
             nn.Linear(self.hidden_dim, self.output_dim)
         )
     def forward(self, x):
-        x = 2*(x- torch.min(x)) / (torch.max(x)-torch.min(x)) - 1
+        # Renormalises the input to [-1,+1] over the whole range of Lambda to be
+        # considered.
+        x = 2*(x- self.Lambda_min) / (self.Lambda_max-self.Lambda_min) - 1
         x = torch.unsqueeze(x, dim=1)  # Ensure input is of shape (batch_size, 1)
         return self.model(x)
     

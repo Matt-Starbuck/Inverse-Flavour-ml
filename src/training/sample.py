@@ -16,5 +16,5 @@ def Lambda_sample(sample_size: int,
         return torch.linspace(log_min, log_max, steps=sample_size, device=device)
     elif mode == 'log_uniform':
         seed = torch.rand(sample_size, device=device)
-        return log_min +(log_max - log_max) * seed
+        return log_min + (log_max - log_min) * seed
 

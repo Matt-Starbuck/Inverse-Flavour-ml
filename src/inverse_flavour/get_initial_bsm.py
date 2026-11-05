@@ -32,7 +32,7 @@ class BSMInitialState:
             return full_sm_at_Lambda
         else:
             full_sm_at_Lambda = sm_at_Lambda(log_lambda_batch, self.sm_dense_traj, self.t_eval_SM)
-            train_split = int(0.8 * log_lambda_batch.shape[0])
+            train_split = int(split * log_lambda_batch.shape[0])
             sm_at_Lambda_train = full_sm_at_Lambda[:train_split,...]
             sm_at_Lambda_test = full_sm_at_Lambda[train_split:,...]
             return sm_at_Lambda_train, sm_at_Lambda_test
