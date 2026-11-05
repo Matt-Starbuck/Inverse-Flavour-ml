@@ -17,12 +17,12 @@ else:
     device = "cpu"
 
 # Set configurations for the training run
-epochs = 100
-sample_size = 100
-batch_size = 8
+epochs = 10000 # Number of epochs used to train the model
+sample_size = 100 # Number of BSM scale samples used in training and testing
+batch_size = 8 # Batch size for training and testing
 loss_fn = combined_loss
-lambda_min = 3000.0
-lambda_max = 100000.0
+lambda_min = 3000.0 # Minimum BSM scale to consider in GeV (must be 3TeV since this is where the inputs are defined)
+lambda_max = 100000.0 # Maximum BSM scale to consider in GeV (Can be anything greater than 3TeV)
 
 # Initiate the model, initial parameter sizes, and optimizer
 model_0 = DetModel(lambda_min=lambda_min, lambda_max=lambda_max).to(device)
@@ -63,11 +63,14 @@ for epoch in range(epochs):
         lambda_flat_test = model_0(Lambda_test)
         lambda_q_test, lambda_u_test, lambda_d_test = reshape_output(lambda_flat_test, batch_size=Lambda_test.shape[0])
         loss_test, h_infos_test, p_infos_test = combined_loss(init_states_test, torch.squeeze(Lambda_test), lambda_q_test, lambda_u_test, lambda_d_test, n_steps=50, theta=0.5)
-    if epoch %10 ==0:
-        print("TRAINING")
-        print(f"Epoch [{epoch+1}/{epochs}]|Total Loss: {loss.item():.4f}|Hierarchy Loss: {h_infos:.4f}|Phenomenology Loss: {p_infos:.4f}|Max lq coupling: {torch.max((torch.abs(lambda_q))):.4f}|Max lu coupling: {torch.max((torch.abs(lambda_u))):.4f} | Max ld coupling: {torch.max((torch.abs(lambda_d))):.4f}")
-        print("TESTING")
-        print(f"Epoch [{epoch+1}/{epochs}]|Total Loss: {loss_test.item():.4f}|Hierarchy Loss: {h_infos_test:.4f}|Phenomenology Loss: {p_infos_test:.4f}|Max lq coupling: {torch.max((torch.abs(lambda_q_test))):.4f}|Max lu coupling: {torch.max((torch.abs(lambda_u_test))):.4f} | Max ld coupling: {torch.max((torch.abs(lambda_d_test))):.4f}")
+        if epoch % 10 == 0:
+
+            max_q, max_u, max_d = torch.max(torch.abs(lambda_q)), torch.max(torch.abs(lambda_u)), torch.max(torch.abs(lambda_d))
+            max_q_t, max_u_t, max_d_t = torch.max(torch.abs(lambda_q_test)), torch.max(torch.abs(lambda_u_test)), torch.max(torch.abs(lambda_d_test))
+            # Display training and testing metrics
+            print(f"\nEpoch [{epoch+1:>{len(str(epochs))}}/{epochs}]")
+            print(f"  ├─ [Train] Tot: {loss.item():>7.4f} | Hier: {h_infos:>7.4f} | Pheno: {p_infos:>7.4f} || Max |λq|: {max_q:>6.4f} | |λu|: {max_u:>6.4f} | |λd|: {max_d:>6.4f}")
+            print(f"  └─ [Test ] Tot: {loss_test.item():>7.4f} | Hier: {h_infos_test:>7.4f} | Pheno: {p_infos_test:>7.4f} || Max |λq|: {max_q_t:>6.4f} | |λu|: {max_u_t:>6.4f} | |λd|: {max_d_t:>6.4f}")
 
 # Save the model if save is on
 if save == "ON":

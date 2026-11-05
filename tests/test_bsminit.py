@@ -1,22 +1,22 @@
-# tests/test_sm_factory.py
 import math
 import torch
 from torchdiffeq import odeint
 from src.inverse_flavour.inputs import init_state_sm
 from src.physics.sm_rge import SMRGE, sm_at_Lambda
 
+# This test script checks that the evolution of the SM up to the BSM scales is working correctly.
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"Running SM Initial State Factory test on device: {device}\n")
 
-    # 1. Initialise SM state at mu = 3 TeV
-    Lambda_min = 3000.0
-    Lambda_max = 100000.0
+    # Initialise SM state at mu = 3 TeV
+    Lambda_min = 3000.0 # Must be equal to 3TeV
+    Lambda_max = 100000.0 # Can be anything creater than 3TeV
     sm_init_state = init_state_sm(device=device)
     print(f"[Check 1] sm_init_state shape: {sm_init_state.shape}, dtype: {sm_init_state.dtype}")
-    assert sm_init_state.shape == (21,), "Expected 1D state vector of length 21!"
+    assert sm_init_state.shape == (21,), "Expected 1D state vector of length 21"
 
-    # 2. Evolve dense SM trajectory from 3 TeV to 100 TeV
+    # Evolve dense SM trajectory from 3 TeV to 100 TeV
     t_eval_SM = torch.linspace(
         math.log(Lambda_min), math.log(Lambda_max), steps=1000, dtype=torch.float32, device=device
     )
@@ -26,10 +26,10 @@ def main():
         sm_dense_traj = odeint(sm_model, sm_init_state, t_eval_SM, method='rk4')
 
     print(f"[Check 2] sm_dense_traj shape: {sm_dense_traj.shape}, dtype: {sm_dense_traj.dtype}")
-    assert sm_dense_traj.shape == (1000, 21), "Expected trajectory shape (1000, 21)!"
-    assert not torch.isnan(sm_dense_traj).any(), "NaNs detected in SM trajectory!"
+    assert sm_dense_traj.shape == (1000, 21), "Expected trajectory shape (1000, 21)"
+    assert not torch.isnan(sm_dense_traj).any(), "NaNs detected in SM trajectory"
 
-    # 3. Physics sanity check on gauge & top Yukawa running (3 TeV -> 100 TeV)
+    # Physics sanity check on gauge & top Yukawa running (3 TeV -> 100 TeV)
     g_3tev = sm_dense_traj[0, :3].real
     g_100tev = sm_dense_traj[-1, :3].real
     yt_3tev = sm_dense_traj[0, 3:12].reshape(3, 3)[2, 2].abs().item()
@@ -46,7 +46,7 @@ def main():
     assert g_100tev[2] < g_3tev[2], "Physics Error: g3 should decrease with energy!"
     assert yt_100tev < yt_3tev, "Physics Error: top Yukawa should decrease with energy!"
 
-    # 4. Test sm_at_Lambda interpolation for a batch of scales
+    # Test sm_at_Lambda interpolation for a batch of scales
     batch_size = 100
     log_lambda_batch = torch.linspace(
         math.log(Lambda_min), math.log(Lambda_max), steps=batch_size, dtype=torch.float32, device=device
