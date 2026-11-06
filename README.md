@@ -29,8 +29,19 @@ The Standard Model of particle physics (SM) describes the interactions between a
 
 The quark masses are govered by the singular values two 3x3 complex 'Yukawa' matrices ($Y_{u}, Y_{d}$). These matrices are not constant, but depend on the energy scale at which the experiment that measures them is done, $\mu$, and therefore the quark masses are predicted to change with energy scale. The differential equations which describe how the yukawa matrices change with energy scale are called the renormalisation group equations (RGEs), and have the form
 
-$\frac{dY_{u}}{dt} = \beta_{u}$ \\
-$\frac{dY_{d}}{dt} = \beta_{d}$.
+$\frac{dY_{u}}{d\mu} = \beta_{u}\left(\mu\right)$ 
+
+$\frac{dY_{d}}{d\mu} = \beta_{d}\left(\mu\right)$.
+
+One possible solution to the flavour problem is that at very high energy scales, the singular values of the Yukawa matrices evolve to be comparable to each other. In the SM, this is known (and can be tested in principle with this code) not to happen. However, it is possible that in a more fundamental theory of particle physics than the SM, the $\beta_{u}\left(\mu\right)$ and $\beta_{d}\left(\mu\right)$ functions could be modified so that this does occurr. In the literature, much investigation has gone into starting with a model where the singular values are comparable, and predicting the observed Yukawa matrices at low energies. Whilst many models have been found where this works, they often lead to severe tensions with other experimental constraints. 
+
+**Goal of this project: The inverse problem.** Starting from the known Yukawa matrices at low energy scales, can a neural network find the $\beta_{u}\left(\mu\right)$ and $\beta_{d}\left(\mu\right)$ functions that compress the singular values at high energies whilst remaining compatible with these low energy constraints? 
+
+## Differentialble pipeline and Multi-Objective Loss
+
+
+
+
 
 
 
