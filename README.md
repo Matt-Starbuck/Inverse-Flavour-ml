@@ -21,7 +21,7 @@ Conservatively assuming that the $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\ri
 
 ** Physical Insights:**
 * Strong couplings within the up sector $\text{max}\left(\lambda_{u}\right) \sim 3$ preferred.
-* Contact operator bounds appear to have a great tension with generating the hierarhcy thatn FCNC bounds do. 
+* Contact operator bounds appear to have a greater intrinsic tension with generating the hierarhcy thatn FCNC bounds do. 
 
 ## Background for non-physicists:
 Protons are made of two up quarks and one down quark. We know, however, of six different kinds of quarks in nature: up, down, charm, strange, top and bottom. The masses of the quarks are extremely hierarchical in nature, which the top quark being around 5 order of magnitude heavier than the up quark. A huge question in theoretical physics today is why this hierarhcy exists. 
