@@ -2,47 +2,50 @@
 PyTorch framework that learns Beyond the Standard Model theories that can compress quark yukawa singular values by the Planck scale, while remaining compatible with low energy constraints. 
 
 ## Key Results
-Given a new physics scale of $\Lambda \in \left[3\text{TeV}, 100\text{TeV}\right]$, the trained neural network outputs complex BSM couplings $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\right)$ that modify the quark Yukawa matrices up to the Planck scale ($M_{\text{Pl}} = 10^{19} \text{GeV}$)
+Given a new physics scale of $\Lambda \in \left[3\text{TeV}, 100\text{TeV}\right]$, the trained neural network outputs complex BSM couplings $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\right)$ that modify the quark Yukawa matrices up to the Planck scale ($M_{\text{Pl}} = 10^{19} \text{ GeV}$)
 
 ### Evolution of Yukawa Couplings from $\Lambda =  3 \text{TeV}$
-Starting from the 5 order of magnitude Standard Model hierarchy at $3\text{TeV}$, the learned couplings drive the singular values to $\mathcal{O}(1)$ of each other by $M_{\text{Pl}}$:
+Starting from the 5 order of magnitude Standard Model hierarchy at $3\text{ TeV}$, the learned couplings drive the singular values to $\mathcal{O}(1)$ of each other by $M_{\text{Pl}}$:
 
 ![RG Evolution](src/training/plots/rg_evolution.png)
 
 ### Hierarchy Compression
-Across the continuous range of BSM scales $\Lambda \in \left[3\text{TeV}, 100\text{TeV}\right]$, the network compresses adjacent generation ratios from $\mathcal{O}(10^{2}-10^{3})$ down to $\mathcal{O}(1)$ by the Planck scale.
+Across the continuous range of BSM scales $\Lambda \in \left[3\text{ TeV}, 100\text{ TeV}\right]$, the network compresses adjacent generation ratios from $\mathcal{O}(10^{2}-10^{3})$ down to $\mathcal{O}(1)$ by the Planck scale.
 
 ![Hierarchy Loss](src/training/plots/hierarchy_loss_vs_lambda.png) 
 
 ### Experimental Bounds
-Conservatively assuming that the $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\right)$ couplings can mediate four-quark operators at tree-level, EFT coefficients are computed, and constrained by $95/%$ confidence level bounds taken from (https://arxiv.org/pdf/2402.09503). In all cases the model predicts parameters that are compatible with these bounds.
+Conservatively assuming that the $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\right)$ couplings can mediate four-quark operators at tree-level, EFT coefficients are computed, and constrained by $95\%$ confidence level bounds taken from (https://arxiv.org/pdf/2402.09503). In all cases the model predicts parameters that are compatible with these bounds.
 
 ![Pheno Loss](src/training/plots/pheno_loss_vs_lambda.png)
 
 **Physical Insights (so far):**
 * Strong couplings within the up sector $\text{max}\left(\lambda_{u}\right) \sim 3$ preferred.
-* Contact operator bounds appear to have a greater intrinsic tension with generating the hierarhcy thatn FCNC bounds do. 
+* Contact operator bounds appear to have a greater intrinsic tension with generating the hierarhcy that FCNC bounds do. 
 
 ## Background for non-physicists:
 
-The Standard Model of particle physics (SM) describes the interactions between all of the elementary particles the make up the universe. In the SM, the proton and neutron are composed of quarks, of which there are six, three 'up types' (up, Charm, Top), and three 'down types' (down, strange, bottom). One of the deepest open questions within the SM, known as the **flavour puzzle**, is why their masses span five orders of magnitude, from the up quark ($\sim 1\text{MeV}$) to the top quark ($\sim 100 \text{GeV}$). 
+The Standard Model of particle physics (SM) describes the interactions between all of the elementary particles the make up the universe. In the SM, the proton and neutron are composed of quarks, of which there are six, three 'up types' (up, charm, top), and three 'down types' (down, strange, bottom). One of the deepest open questions within the SM, known as the **flavour puzzle**, is why their masses span five orders of magnitude, from the up quark ($\sim 1\text{ MeV}$) to the top quark ($\sim 100\text{ GeV}$). 
 
-The quark masses are govered by the singular values two 3x3 complex 'Yukawa' matrices ($Y_{u}, Y_{d}$). These matrices are not constant, but depend on the energy scale at which the experiment that measures them is done, $\mu$, and therefore the quark masses are predicted to change with energy scale. The differential equations which describe how the yukawa matrices change with energy scale are called the renormalisation group equations (RGEs), and have the form
+The quark masses are goverened by the singular values of two 3x3 complex 'Yukawa' matrices ($Y_{u}, Y_{d}$). These matrices are not constant, but depend on the energy scale at which the experiment that measures them is done, $\mu$, and therefore the quark masses are predicted to change with energy scale. The differential equations which describe how the yukawa matrices change with energy scale are called the renormalisation group equations (RGEs), and have the form
 
-$\frac{dY_{u}}{d\mu} = \beta_{u}\left(\mu\right)$ 
+$\frac{dY_{u}}{d\ln\mu} = \beta_{u}\left(\mu\right)$ 
 
-$\frac{dY_{d}}{d\mu} = \beta_{d}\left(\mu\right)$.
+$\frac{dY_{d}}{d\ln\mu} = \beta_{d}\left(\mu\right)$.
 
 One possible solution to the flavour problem is that at very high energy scales, the singular values of the Yukawa matrices evolve to be comparable to each other. In the SM, this is known (and can be tested in principle with this code) not to happen. However, it is possible that in a more fundamental theory of particle physics than the SM, the $\beta_{u}\left(\mu\right)$ and $\beta_{d}\left(\mu\right)$ functions could be modified so that this does occurr. In the literature, much investigation has gone into starting with a model where the singular values are comparable, and predicting the observed Yukawa matrices at low energies. Whilst many models have been found where this works, they often lead to severe tensions with other experimental constraints. 
 
 **Goal of this project: The inverse problem.** Starting from the known Yukawa matrices at low energy scales, can a neural network find the $\beta_{u}\left(\mu\right)$ and $\beta_{d}\left(\mu\right)$ functions that compress the singular values at high energies whilst remaining compatible with these low energy constraints? 
 
-## Differentialble pipeline and Multi-Objective Loss
+The neural network takes in a scale of new physics $\Lambda$ as input, and ouputs three 3x3 complex matrices $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\right)$ which define (by assumption, see below) the RGEs above the scale $\Lambda$ as
 
+\beta_{u} = \lambda_{q} \lambda^{\dagger}_{u}
 
+\beta_{d} = \lambda_{q} \lambda^{\dagger}_{d}
 
+The $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\right)$ matrices then enter a Multi-Objective Loss loss function to be described below.
 
-
+## Differentiable Pipeline and Multi-Objective Loss
 
 
 ## Assumptions of this work
