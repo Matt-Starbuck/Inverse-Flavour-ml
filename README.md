@@ -39,9 +39,9 @@ One possible solution to the flavour problem is that at very high energy scales,
 
 The neural network takes in a scale of new physics $\Lambda$ as input, and outputs three 3x3 complex matrices $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\right)$ which define (by assumption, see below) the RGEs above the scale $\Lambda$ as
 
-$\beta_{u} = \beta^{\text{SM}}_{u} + \frac{1}{16 \pi^{2}}\lambda_{q} \lambda^{\dagger}_{u}$
+$\beta_{u} = \beta_{u}^{\text{SM}} + \frac{1}{16 \pi^{2}}\lambda_{q} \lambda_{u}^{\dagger}$
 
-$\beta_{d} = \beta^{\text{SM}}_{d} + \frac{1}{16 \pi^{2}}\lambda_{q} \lambda^{\dagger}_{d}$
+$\beta_{d} = \beta_{d}^{\text{SM}} + \frac{1}{16 \pi^{2}}\lambda_{q} \lambda_{d}^{\dagger}$
 
 The $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\right)$ matrices then enter a multi-objective loss function to be described below.
 
@@ -76,12 +76,11 @@ In this first version, a few assumptions have been made about the new physics th
 3. **The right handed up and down sector corrections are independent**. This way $\lambda_{u}$ does not enter $\beta_{d}$ and $\lambda_{d}$ does not enter $\beta_{u}$.
 
 ## Quick Start
-
-# Run the physics & autograd verification suite
+### Run the physics & autograd verification suite
 python -m tests.test_non_ML_workflow
 
-# Train the deterministic model
+### Train the deterministic model
 python -m src.training.train
 
-# Generate Planck hierarchy, EFT bound, and RG trajectory plots
+### Generate Planck hierarchy, EFT bound, and RG trajectory plots
 python -m src.training.predictions
