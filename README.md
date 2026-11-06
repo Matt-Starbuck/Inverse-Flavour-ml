@@ -19,12 +19,20 @@ Conservatively assuming that the $\left(\lambda_{q}, \lambda_{u}, \lambda_{d}\ri
 
 ![Pheno Loss](src/training/plots/pheno_loss_vs_lambda.png)
 
-** Physical Insights:**
+**Physical Insights (so far):**
 * Strong couplings within the up sector $\text{max}\left(\lambda_{u}\right) \sim 3$ preferred.
 * Contact operator bounds appear to have a greater intrinsic tension with generating the hierarhcy thatn FCNC bounds do. 
 
 ## Background for non-physicists:
-Protons are made of two up quarks and one down quark. We know, however, of six different kinds of quarks in nature: up, down, charm, strange, top and bottom. The masses of the quarks are extremely hierarchical in nature, which the top quark being around 5 order of magnitude heavier than the up quark. A huge question in theoretical physics today is why this hierarhcy exists. 
+
+The Standard Model of particle physics (SM) describes the interactions between all of the elementary particles the make up the universe. In the SM, the proton and neutron are composed of quarks, of which there are six, three 'up types' (up, Charm, Top), and three 'down types' (down, strange, bottom). One of the deepest open questions within the SM, known as the **flavour puzzle**, is why their masses span five orders of magnitude, from the up quark ($\sim 1\text{MeV}$) to the top quark ($\sim 100 \text{GeV}$). 
+
+The quark masses are govered by the singular values two 3x3 complex 'Yukawa' matrices ($Y_{u}, Y_{d}$). These matrices are not constant, but depend on the energy scale at which the experiment that measures them is done, $\mu$, and therefore the quark masses are predicted to change with energy scale. The differential equations which describe how the yukawa matrices change with energy scale are called the renormalisation group equations (RGEs), and have the form
+
+$\frac{dY_{u}}{dt} = \beta_{u}$ \\
+$\frac{dY_{d}}{dt} = \beta_{d}$.
+
+
 
 ## Assumptions of this work
 A few assumptions have been made about the BSM theories considered
