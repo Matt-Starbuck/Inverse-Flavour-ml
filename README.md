@@ -12,9 +12,11 @@ Starting from the 5 order of magnitude Standard Model hierarchy at $3\text{TeV}$
 ### Hierarchy Compression
 Across the continuous range of BSM scales $\Lambda \in \left[3\text{TeV}, 100\text{TeV}\right]$, the network compresses adjacent generation ratios from $\mathcal{O}(10^{2}-10^{3})$ down to $\mathcal{O}(1)$ by the Planck scale.
 
-![Hierarchy Loss](src/training/plots/hierarchy_loss_vs_lambda.png) ![Pheno Loss](src/training/plots/pheno_loss_vs_lambda.png)
+![Hierarchy Loss](src/training/plots/hierarchy_loss_vs_lambda.png) 
 
 ### Experimental Bounds
+
+![Pheno Loss](src/training/plots/pheno_loss_vs_lambda.png)
 
 ## Background for non-physicists:
 Protons are made of two up quarks and one down quark. We know, however, of six different kinds of quarks in nature: up, down, charm, strange, top and bottom. The masses of the quarks are extremely hierarchical in nature, which the top quark being around 5 order of magnitude heavier than the up quark. A huge question in theoretical physics today is why this hierarhcy exists. 
