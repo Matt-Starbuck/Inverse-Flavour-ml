@@ -58,14 +58,14 @@ are exponentially punished for having couplings greater than $2\pi$.
 
 ## Repository Structure
 
+```text
 ├── src/
-│   ├── inverse_flavour/   # Initial Parameter values at $\mu=3\text{ TeV}$.
+│   ├── inverse_flavour/   # Initial SM parameter values at mu = 3 TeV & trajectory caching
 │   ├── physics/           # Vectorized SM & BSM 1-loop RGE ODE modules
 │   ├── loss_functions/    # Planck SVD hierarchy loss and EFT meson/dijet bounds
 │   ├── models/            # Deterministic MLP architecture & complex tensor reshaping
 │   └── training/          # Scale sampling, training loop, and diagnostic plotting
-└── tests/                 # Test of end-to-end forward/backward workflow.
-
+└── tests/                 # Test of end-to-end forward/backward workflow
 
 ## Physics Simplifications and Assumptions (v1.0)
 In this first version, a few assumptions have been made about the new physics that modifies the RGEs of Yukawa couplings
