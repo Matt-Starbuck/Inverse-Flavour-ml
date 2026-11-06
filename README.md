@@ -12,7 +12,7 @@ Starting from the 5 order of magnitude Standard Model hierarchy at $3\text{TeV}$
 ### Hierarchy Compression
 Across the continuous range of BSM scales $\Lambda \in \left[3\text{TeV}, 100\text{TeV}\right]$, the network compresses adjacent generation ratios from $\mathcal{O}(10^{2}-10^{3})$ down to $\mathcal{O}(1)$ by the Planck scale.
 
-![Hierarchy Loss](src/training/plots/hierarchy_loss_vs_lambda.png)
+![Hierarchy Loss](src/training/plots/hierarchy_loss_vs_lambda.png) ![Pheno Loss](src/training/plots/pheno_loss_vs_lambda.png)
 
 ### Experimental Bounds
 
