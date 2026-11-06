@@ -17,7 +17,7 @@ else:
     device = "cpu"
 
 # Set configurations for the training run
-epochs = 10000 # Number of epochs used to train the model
+epochs = 5000 # Number of epochs used to train the model
 sample_size = 100 # Number of BSM scale samples used in training and testing
 batch_size = 8 # Batch size for training and testing
 loss_fn = combined_loss
