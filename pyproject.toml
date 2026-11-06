@@ -10,6 +10,8 @@ requires-python = ">=3.12"
 dependencies = [
     "numpy<2",
     "torch==2.2.2",
+    "matplotlib",
+    "torchdiffeq"
 ]
 
 [build-system]
