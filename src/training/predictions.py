@@ -144,36 +144,74 @@ def plot_rg_evolution(bsm_init_state: torch.Tensor, log_lambda_val: torch.Tensor
     plt.savefig(PATH + "rg_evolution.pdf", format='pdf', bbox_inches='tight')
     plt.close()
 
+def grid_plot(grid: np.ndarray, titles: list, PATH: str, filename: str):
+    """ Plot a 2x2 grid of 3x3 matrix elements
+    """
+    fig, axs = plt.subplots(2, 2, figsize=(8, 8))
+    for i in range(2):
+        for j in range(2):
+            ax = axs[i, j]
+            matrix = grid[i][j]
+        
+            # Display the matrix as an image (top-left is index 0,0 natively)
+            im = ax.imshow(matrix, cmap='YlGnBu', interpolation='nearest')
+            ax.set_title(titles[i][j], fontsize=12, pad=10)
+        
+            # Adjust tick labels to show 1-based indexing (1,1 to 3,3)
+            ax.set_xticks([0, 1, 2])
+            ax.set_xticklabels(['1', '2', '3'])
+            ax.set_yticks([0, 1, 2])
+            ax.set_yticklabels(['1', '2', '3'])
+        
+            # Overlay the numerical values inside each cell
+            for row in range(3):
+                for col in range(3):
+                    ax.text(
+                        col, row, f"{matrix[row, col]:.3g}",
+                        ha='center', va='center',
+                        color='black', fontweight='bold'
+                    )
+    plt.tight_layout()
+    plt.savefig(PATH + f"{filename}.pdf", format='pdf', bbox_inches='tight')
+    plt.close()
+
+
 # BSM coupling structures
 def plot_bsm_couplings(lambda_q: torch.Tensor, lambda_u: torch.Tensor, lambda_d: torch.Tensor, PATH:str):
     """ Plots to visualise the learned coupling matrices. """
 
-    # Load the CKM to check basis alignment
+    # Load the CKM, and compute the lambda_q coupling in the down mass basis
     VCKM = CKM_device(device=device)
+    lambda_q_down = VCKM.mH @ lambda_q
 
-    # Put the couplings to numpy for plotting.
-    lambda_q_np = lambda_q.detach().cpu().numpy()
+    # Convert the torch.Tensors to numpy.arrays for plotting purposes
+    lambda_q_up_np = lambda_q.detach().cpu().numpy()
+    lambda_q_down_np = lambda_q_down.detach().cpu().numpy()
     lambda_u_np = lambda_u.detach().cpu().numpy()
     lambda_d_np = lambda_d.detach().cpu().numpy()
 
-    ## Up mass basis print outs
-    # Plot the matrices as heatmaps at 3TeV
-    print("This is lambda_q at 3 TeV", lambda_q_np[0,...])
-    print("This is lambda_u at 3 TeV", lambda_u_np[0,...])
-    print("This is lambda_d at 3 TeV", lambda_d_np[0,...])
+    mat_3TeV = [[np.abs(lambda_q_up_np[0,...]), np.abs(lambda_q_down_np[0,...])],[np.abs(lambda_u_np[0,...]), np.abs(lambda_d_np[0,...])]]
+    titles = [['$\\lambda_q$ (up basis)', '$\\lambda_q$ (down basis)'], ['$\\lambda_u$', '$\\lambda_d$']]
 
-    # Plot the matrices as heatmaps at Lambda_max
-    print(f"This is lambda_q at 100 TeV", lambda_q_np[-1,...])
-    print(f"This is lambda_u at 100 TeV", lambda_u_np[-1,...])
-    print(f"This is lambda_d at 100 TeV", lambda_d_np[-1,...])
+    grid_plot(mat_3TeV, titles, PATH, "bsm_matrices")
 
-    ## Down mass basis print outs
-    print("This is lambda_q at 3 TeV in down-mass basis", VCKM.mH.resolve_conj().numpy() @ lambda_q_np[0,...])
-    print(f"This is lambda_q at 100 TeV in down-mass basis", VCKM.mH.resolve_conj().numpy() @ lambda_q_np[-1,...])
+    # U(3) BSM invariant plots
+    M_q_up = lambda_q @ lambda_q.mH
+    M_q_down = lambda_q_down @ lambda_q_down.mH
+    M_u = lambda_u @ lambda_u.mH
+    M_d = lambda_d @ lambda_d.mH
 
-    print("These are the lambda structures that enter the constraints")
-    print("lambda_q @ lambda_q^dagger at 3 TeV", lambda_q_np[0,...] @ lambda_q_np[0,...].conj().T)
-    print(f"lambda_q @ lambda_q^dagger at 100 TeV", lambda_q_np[-1,...] @ lambda_q_np[-1,...].conj().T)
+    M_q_up_np = M_q_up.detach().cpu().numpy()
+    M_q_down_np = M_q_down.detach().cpu().numpy()
+    M_u_np = M_u.detach().cpu().numpy()
+    M_d_np = M_d.detach().cpu().numpy()
+
+    M_3TeV = [[np.abs(M_q_up_np[0,...]), np.abs(M_q_down_np[0,...])],[np.abs(M_u_np[0,...]), np.abs(M_d_np[0,...])]]
+    titles = ([['$\\lambda_q \\lambda^{\\dagger}_{q}$ (up basis)', '$\\lambda_q\\lambda^{\\dagger}_{q}$ (down basis)'], 
+              ['$\\lambda_u \\lambda^{\\dagger}_{u}$', '$\\lambda_d \\lambda^{\\dagger}_{d}$']]
+    )
+    grid_plot(M_3TeV, titles, PATH, "bsm_matrices_sq")
+    
 
 if __name__ == "__main__":
     
