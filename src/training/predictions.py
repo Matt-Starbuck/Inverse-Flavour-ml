@@ -3,6 +3,7 @@ from torchdiffeq import odeint
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+from src.inverse_flavour.inputs import CKM_device
 
 from src.models.det_model import DetModel, reshape_output
 from src.training.sample import Lambda_sample
@@ -16,6 +17,14 @@ from src.inverse_flavour.inputs import b1, b2, b3
 # This script loads a trained model and investigates the properties of the predicted BSM matrices (lambda_q, lambda_u, lambda_d) visaully
 # as a function of Lambda BSM scales.
 
+# Set which plots to produce
+h_plot = True # plot the hierarchy of Yukawa singular values at the Planck scales as a function of Lambda BSM scale
+p_plot = True # plot the phenomenological constraints on the BSM couplings as a function of Lambda BSM scale
+rg_flow_plot = True # plot the scale variation of the yukawa singular value ratios for Lambda=3TeV
+bsm_matrices_plot = True # plot the BSM coupling matrices at 3TeV and 100TeV
+
+SAVE_PATH = "plots/" # Set the path to save the plots to
+PATH = "src/training/det_model.pt" # Set the path to the saved model from training.py file
 # Plot configuartions
 plt.rcParams.update({
     'font.size': 12,
@@ -32,8 +41,6 @@ plt.rcParams.update({
 #######################################################
 #Plotting functions
 #######################################################
-
-SAVE_PATH = "src/training/plots/"
 
 # Hierarchy loss
 def plot_hierarchy(Lambda_batch: torch.Tensor, h_infos: dict, PATH: str):
@@ -70,7 +77,7 @@ def plot_pheno(Lambda_batch:torch.Tensor, p_infos:dict, PATH:str):
 
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
     labels = [r'$D^0$', r'$K^0$', r'$B_d$', r'$B_s$', r'$uu \rightarrow uu$', r'$dd \rightarrow dd$', r'$qq \rightarrow qq$']
-    keys = ["D0", "K0", "Bd", "Bs", "uu", "dd", "qq"]
+    keys = ["Im_D0_l", "Im_K0_l", "Bd_l", "Bs_l", "uu", "dd", "qq"]
 
     plt.figure(figsize=(8, 6))
     
@@ -90,7 +97,6 @@ def plot_pheno(Lambda_batch:torch.Tensor, p_infos:dict, PATH:str):
     plt.close()
 
 # Evolution of Yukawa singular values
-
 def plot_rg_evolution(bsm_init_state: torch.Tensor, log_lambda_val: torch.Tensor,
                       lambda_q: torch.Tensor, lambda_u: torch.Tensor, lambda_d: torch.Tensor,
                       PATH: str, n_steps: int=100):
@@ -138,42 +144,77 @@ def plot_rg_evolution(bsm_init_state: torch.Tensor, log_lambda_val: torch.Tensor
     plt.savefig(PATH + "rg_evolution.pdf", format='pdf', bbox_inches='tight')
     plt.close()
 
-# Set the device to GPU if available, otherwise use CPU
-if torch.cuda.is_available():
-    device = "cuda"
-else:
-    device = "cpu"
+# BSM coupling structures
+def plot_bsm_couplings(lambda_q: torch.Tensor, lambda_u: torch.Tensor, lambda_d: torch.Tensor, PATH:str):
+    """ Plots to visualise the learned coupling matrices. """
 
-# Set the path to the saved model from training.py file
-PATH = "src/training/det_model.pt"
+    # Load the CKM to check basis alignment
+    VCKM = CKM_device(device=device)
 
-# Load the trained model and set to eval mode
-model_loaded = DetModel()
-model_loaded.load_state_dict(torch.load(PATH, weights_only=True))
-model_loaded.eval()
+    # Put the couplings to numpy for plotting.
+    lambda_q_np = lambda_q.detach().cpu().numpy()
+    lambda_u_np = lambda_u.detach().cpu().numpy()
+    lambda_d_np = lambda_d.detach().cpu().numpy()
 
-# Generate a grid of Lambda values for plotting
-sample_size = 1000
+    ## Up mass basis print outs
+    # Plot the matrices as heatmaps at 3TeV
+    print("This is lambda_q at 3 TeV", lambda_q_np[0,...])
+    print("This is lambda_u at 3 TeV", lambda_u_np[0,...])
+    print("This is lambda_d at 3 TeV", lambda_d_np[0,...])
 
-Lambda_batch = Lambda_sample(sample_size=sample_size, lambda_min=3000.0, lambda_max=100000.0, mode='log_grid')
-state_obj = BSMInitialState(lambda_min=3000.0, lambda_max=100000.0, steps=100, device=device)
-init_states = state_obj.get_init_states_train_test(Lambda_batch, split=1.0)
-lambda_flat = model_loaded(Lambda_batch)
-lambda_q, lambda_u, lambda_d = reshape_output(lambda_flat, batch_size=Lambda_batch.shape[0])
+    # Plot the matrices as heatmaps at Lambda_max
+    print(f"This is lambda_q at 100 TeV", lambda_q_np[-1,...])
+    print(f"This is lambda_u at 100 TeV", lambda_u_np[-1,...])
+    print(f"This is lambda_d at 100 TeV", lambda_d_np[-1,...])
 
-#print(model_loaded.state_dict())
+    ## Down mass basis print outs
+    print("This is lambda_q at 3 TeV in down-mass basis", VCKM.mH.resolve_conj().numpy() @ lambda_q_np[0,...])
+    print(f"This is lambda_q at 100 TeV in down-mass basis", VCKM.mH.resolve_conj().numpy() @ lambda_q_np[-1,...])
 
-h_infos = hierarchy_loss(init_states, torch.squeeze(Lambda_batch), lambda_q, lambda_u, lambda_d, n_steps=50)
-p_infos = compute_eft_violation_ratios(lambda_q, lambda_u, lambda_d, torch.squeeze(Lambda_batch))
-plot_hierarchy(Lambda_batch, h_infos, SAVE_PATH)
-plot_pheno(Lambda_batch, p_infos, SAVE_PATH)
+    print("These are the lambda structures that enter the constraints")
+    print("lambda_q @ lambda_q^dagger at 3 TeV", lambda_q_np[0,...] @ lambda_q_np[0,...].conj().T)
+    print(f"lambda_q @ lambda_q^dagger at 100 TeV", lambda_q_np[-1,...] @ lambda_q_np[-1,...].conj().T)
 
-bsm_state_3tev = init_states[0:1, ...]
-log_lambda_3tev = torch.squeeze(Lambda_batch)[0:1]
-lam_q_3tev = lambda_q[0:1, ...]
-lam_u_3tev = lambda_u[0:1, ...]
-lam_d_3tev = lambda_d[0:1, ...]
+if __name__ == "__main__":
+    
+    # Set the device to GPU if available, otherwise use CPU
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
 
-plot_rg_evolution(bsm_state_3tev, log_lambda_3tev, lam_q_3tev, lam_u_3tev, lam_d_3tev, SAVE_PATH)
+    # Load the trained model and set to eval mode
+    model_loaded = DetModel()
+    model_loaded.load_state_dict(torch.load(PATH, weights_only=True))
+    model_loaded.eval()
 
+    # Generate a grid of Lambda values for plotting
+    sample_size = 1000
+    Lambda_batch = Lambda_sample(sample_size=sample_size, lambda_min=3000.0, lambda_max=100000.0, mode='log_grid')
+    state_obj = BSMInitialState(lambda_min=3000.0, lambda_max=100000.0, steps=100, device=device)
+    init_states = state_obj.get_init_states_train_test(Lambda_batch, split=1.0)
+    lambda_flat = model_loaded(Lambda_batch)
+    lambda_q, lambda_u, lambda_d = reshape_output(lambda_flat, batch_size=Lambda_batch.shape[0])
 
+    # Extract the hierarchy and phenomenological dictionary information.
+    h_infos = hierarchy_loss(init_states, torch.squeeze(Lambda_batch), lambda_q, lambda_u, lambda_d, n_steps=50)
+    p_infos = compute_eft_violation_ratios(lambda_q, lambda_u, lambda_d, torch.squeeze(Lambda_batch))
+
+    # If switched on, plot the Yukawa hierarchies as a function of Lambda
+    if h_plot == True:
+        plot_hierarchy(Lambda_batch, h_infos, SAVE_PATH)
+    
+    # Same for phenomenological constraints plot
+    if p_plot == True:
+        plot_pheno(Lambda_batch, p_infos, SAVE_PATH)
+
+    if rg_flow_plot == True:
+        bsm_state_3tev = init_states[0:1, ...]
+        log_lambda_3tev = torch.squeeze(Lambda_batch)[0:1]
+        lam_q_3tev = lambda_q[0:1, ...]
+        lam_u_3tev = lambda_u[0:1, ...]
+        lam_d_3tev = lambda_d[0:1, ...]
+        plot_rg_evolution(bsm_state_3tev, log_lambda_3tev, lam_q_3tev, lam_u_3tev, lam_d_3tev, SAVE_PATH)
+    
+    if bsm_matrices_plot == True:
+        plot_bsm_couplings(lambda_q, lambda_u, lambda_d, SAVE_PATH)

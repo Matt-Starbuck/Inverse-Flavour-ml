@@ -4,7 +4,8 @@ from src.inverse_flavour.inputs import CKM_device
 
 # This script contains LEFT Wilson coefficient constraints, and functions that 
 # compute whether a set of lambdas satisfy these constraints. 
-# Bounds are taken from https://arxiv.org/abs/2402.09503.
+# Unless stated otherwise, all bounds are taken from https://arxiv.org/abs/2402.09503 Eq. (C.18).
+# Some are taken from slides UTfit=https://agenda.infn.it/event/14377/contributions/24434/attachments/17481/19830/silvestriniLaThuile.pdf
 
 # For simplicity, LR structures are neglected and left for a more precise implementation.
 
@@ -12,7 +13,9 @@ from src.inverse_flavour.inputs import CKM_device
 C_bs_1_max = 2.2676e-11
 C_bd_1_max = 8.2645e-13
 Im_C_sd_1_max = 1.4793e-15
+Re_C_sd_1_max =  7.25e-15 #Taken from UTfit, boundaries are averaged to get magnitude bound
 Im_C_cu_1_max = 1.0000e-14
+Re_C_cu_1_max = 2.8e-13 # Taken rom UTfit, boundaries are averaged to get magnitude bound
 
 # LHC diject 
 C_uu_run2_max = 4.4e-8  # GeV^-2
@@ -47,10 +50,17 @@ def compute_eft_violation_ratios(
     M_q_d = lambda_q_d @ lambda_q_d.mH
 
     # Delta F = 2 Wilson coefficients: C_{ij} = (M_{ij})^2 / Lambda^2 (complex!)
-    C_cu_pred = ((M_u[:, 0, 1] ** 2) + (M_q_u[:, 0, 1] ** 2)) * inv_lambda_sq
-    C_sd_pred = ((M_d[:, 0, 1] ** 2) + (M_q_d[:, 0, 1] ** 2)) * inv_lambda_sq
-    C_bd_pred = ((M_d[:, 0, 2] ** 2) + (M_q_d[:, 0, 2] ** 2)) * inv_lambda_sq
-    C_bs_pred = ((M_d[:, 1, 2] ** 2) + (M_q_d[:, 1, 2] ** 2)) * inv_lambda_sq
+    C_cu_pred_r = ((M_u[:, 0, 1] ** 2) ) * inv_lambda_sq
+    C_cu_pred_l = ((M_q_u[:, 0, 1] ** 2)) * inv_lambda_sq
+
+    C_sd_pred_r = ((M_d[:, 0, 1] ** 2)) * inv_lambda_sq
+    C_sd_pred_l = ((M_q_d[:, 0, 1] ** 2)) * inv_lambda_sq
+
+    C_bd_pred_r = ((M_d[:, 0, 2] ** 2)) * inv_lambda_sq
+    C_bd_pred_l = ((M_q_d[:, 0, 2] ** 2)) * inv_lambda_sq
+
+    C_bs_pred_r = ((M_d[:, 1, 2] ** 2)) * inv_lambda_sq
+    C_bs_pred_l = ((M_q_d[:, 1, 2] ** 2)) * inv_lambda_sq
 
     # LHC dijet ΔF = 0 four-fermion operators: C_{ii} = (M_{ii})^2 / Lambda^2
     C_uu_pred = (M_u[:, 0, 0].real ** 2) * inv_lambda_sq
@@ -59,10 +69,18 @@ def compute_eft_violation_ratios(
 
     # Add a tiny epsilon (1e-30) inside abs() on complex numbers to prevent NaN gradients at 0
     ratios = {
-        "D0": torch.abs(torch.imag(C_cu_pred)) / Im_C_cu_1_max,
-        "K0": torch.abs(torch.imag(C_sd_pred)) / Im_C_sd_1_max,
-        "Bd": torch.abs(C_bd_pred + 1e-30) / C_bd_1_max,
-        "Bs": torch.abs(C_bs_pred + 1e-30) / C_bs_1_max,
+        "Im_D0_l": torch.abs(torch.imag(C_cu_pred_l)) / Im_C_cu_1_max,
+        "Im_D0_r": torch.abs(torch.imag(C_cu_pred_r)) / Im_C_cu_1_max,
+        "Im_K0_l": torch.abs(torch.imag(C_sd_pred_l)) / Im_C_sd_1_max,
+        "Im_K0_r": torch.abs(torch.imag(C_sd_pred_r)) / Im_C_sd_1_max,
+        "Re_D0_l": torch.abs(torch.real(C_cu_pred_l)) / Re_C_cu_1_max,
+        "Re_D0_r": torch.abs(torch.real(C_cu_pred_r)) / Re_C_cu_1_max,
+        "Re_K0_l": torch.abs(torch.real(C_sd_pred_l)) / Re_C_sd_1_max,
+        "Re_K0_r": torch.abs(torch.real(C_sd_pred_r)) / Re_C_sd_1_max,
+        "Bd_l": torch.abs(C_bd_pred_l + 1e-30) / C_bd_1_max,
+        "Bd_r": torch.abs(C_bd_pred_r + 1e-30) / C_bd_1_max,
+        "Bs_l": torch.abs(C_bs_pred_l + 1e-30) / C_bs_1_max,
+        "Bs_r": torch.abs(C_bs_pred_r + 1e-30) / C_bs_1_max,
         "uu": torch.abs(C_uu_pred) / C_uu_run2_max,
         "dd": torch.abs(C_dd_pred) / C_dd_run2_max,
         "qq": torch.abs(C_qq_pred) / C_qq_run2_max,

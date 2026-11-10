@@ -22,8 +22,10 @@ def combined_loss(bsm_init_states,
     # Sum dictionary values to form the hierarhcy and phenomenological loss functions
     h_loss = h_infos["up_32"] + h_infos["up_21"] + h_infos["down_32"] + h_infos["down_21"]
 
-    p_loss =  (p_infos["D0"] + p_infos["K0"] + p_infos["Bd"] + p_infos["Bs"]
-                + p_infos["uu"] + p_infos["dd"] + p_infos["qq"]
+    p_loss =  (p_infos["Im_D0_l"] + p_infos["Im_D0_r"] + p_infos["Re_D0_l"]+p_infos["Re_D0_r"] +
+               p_infos["Im_K0_l"] + p_infos["Im_K0_r"] + p_infos["Re_K0_l"]+p_infos["Re_K0_r"] +
+               p_infos["Bd_l"] + p_infos["Bd_r"] +p_infos["Bs_l"] +p_infos["Bs_r"]+ 
+               p_infos["uu"] + p_infos["dd"] + p_infos["qq"]
     )
 
     # punish the loss for choosing large coupling values
