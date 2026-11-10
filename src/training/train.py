@@ -34,6 +34,8 @@ optimizer = torch.optim.Adam(model_0.parameters(), lr=5e-5)
 
 # Quick print test of the sampled Lambda values
 Lambda_batch = Lambda_sample(sample_size=sample_size, lambda_min=lambda_min, lambda_max=lambda_max, mode='log_grid')
+perm = torch.randperm(Lambda_batch.shape[0], device=device)
+Lambda_batch = Lambda_batch[perm]
 idx_split = 0.8
 state_obj = BSMInitialState(lambda_min=lambda_min, lambda_max=lambda_max, steps=100, device=device)
 init_states_train, init_states_test = state_obj.get_init_states_train_test(Lambda_batch, split=idx_split)

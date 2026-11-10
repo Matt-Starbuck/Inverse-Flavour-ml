@@ -2,6 +2,7 @@ import torch
 import math
 from src.loss_functions.eft_bounds import *
 from src.loss_functions.hierarchy_loss import *
+import torch.nn.functional as F
 
 def combined_loss(bsm_init_states,
               log_lambda_batch: torch.Tensor,
@@ -20,13 +21,10 @@ def combined_loss(bsm_init_states,
                                                log_lambda_batch)
     
     # Sum dictionary values to form the hierarhcy and phenomenological loss functions
-    h_loss = h_infos["up_32"] + h_infos["up_21"] + h_infos["down_32"] + h_infos["down_21"]
+    h_loss = sum(r for r in h_infos.values())
 
-    p_loss =  (p_infos["Im_D0_l"] + p_infos["Im_D0_r"] + p_infos["Re_D0_l"]+p_infos["Re_D0_r"] +
-               p_infos["Im_K0_l"] + p_infos["Im_K0_r"] + p_infos["Re_K0_l"]+p_infos["Re_K0_r"] +
-               p_infos["Bd_l"] + p_infos["Bd_r"] +p_infos["Bs_l"] +p_infos["Bs_r"]+ 
-               p_infos["uu"] + p_infos["dd"] + p_infos["qq"]
-    )
+    # Uses softplus function to not over penalise Wilson coefficients far within the bounds.
+    p_loss = sum(F.softplus(r-0.5, beta=10.0) for r in p_infos.values()) 
 
     # punish the loss for choosing large coupling values
     pert_loss = (torch.exp(torch.max(torch.abs(lambda_q)) / (2 * torch.pi)) 
