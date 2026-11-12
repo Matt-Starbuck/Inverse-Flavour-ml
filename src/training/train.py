@@ -17,7 +17,7 @@ else:
     device = "cpu"
 
 # Set configurations for the training run
-epochs = 5000 # Number of epochs used to train the model
+epochs = 3000 # Number of epochs used to train the model
 sample_size = 100 # Number of BSM scale samples used in training and testing
 batch_size = 8 # Batch size for training and testing
 loss_fn = combined_loss
@@ -30,8 +30,9 @@ model_0 = DetModel(lambda_min=lambda_min, lambda_max=lambda_max).to(device)
 with torch.no_grad():
     for p in model_0.parameters():
         nn.init.normal_(p, mean=0.0, std=0.01)
-optimizer = torch.optim.Adam(model_0.parameters(), lr=5e-5)
-
+optimizer = torch.optim.Adam(model_0.parameters(), lr=1.5e-4)
+#scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=40, min_lr=1e-5)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-5)
 # Quick print test of the sampled Lambda values
 Lambda_batch = Lambda_sample(sample_size=sample_size, lambda_min=lambda_min, lambda_max=lambda_max, mode='log_grid')
 perm = torch.randperm(Lambda_batch.shape[0], device=device)
@@ -47,8 +48,16 @@ print( f"This should have 0 dim:", {math.ceil((1-idx_split) * Lambda_batch.shape
 print( f"This should have 0 dim:", {math.ceil(idx_split * Lambda_batch.shape[0])}, Lambda_train.shape)
 print( f"This should have 0 dim:", {math.ceil((1-idx_split) * Lambda_batch.shape[0])}, Lambda_test.shape)
 
+# Define a dictionary to save the training and testing loss values
+loss_history = {
+    "train_tot": [], "train_hier": [], "train_pheno": [],
+    "test_tot":  [], "test_hier":  [], "test_pheno":  [],
+    "lr": []
+}
+
+# Training and testing loop
 for epoch in range(epochs):
-    # Training
+    ## Training
     model_0.train()
     optimizer.zero_grad()
     # Forward pass
@@ -59,7 +68,8 @@ for epoch in range(epochs):
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    # Testing
+    scheduler.step()
+    ## Testing
     model_0.eval()
     with torch.inference_mode():
         lambda_flat_test = model_0(Lambda_test)
@@ -73,10 +83,23 @@ for epoch in range(epochs):
             print(f"\nEpoch [{epoch+1:>{len(str(epochs))}}/{epochs}]")
             print(f"  ├─ [Train] Tot: {loss.item():>7.4f} | Hier: {h_infos:>7.4f} | Pheno: {p_infos:>7.4f} || Max |λq|: {max_q:>6.4f} | |λu|: {max_u:>6.4f} | |λd|: {max_d:>6.4f}")
             print(f"  └─ [Test ] Tot: {loss_test.item():>7.4f} | Hier: {h_infos_test:>7.4f} | Pheno: {p_infos_test:>7.4f} || Max |λq|: {max_q_t:>6.4f} | |λu|: {max_u_t:>6.4f} | |λd|: {max_d_t:>6.4f}")
+            print(f"  └─ [LR   ]    : {optimizer.param_groups[0]['lr']:.6f}")
+    # record losses to loss_history dictionary
+    loss_history["train_tot"].append(loss.item())
+    loss_history["train_hier"].append(h_infos.item()* 0.5)
+    loss_history["train_pheno"].append(p_infos.item() * 0.5)
+    
+    loss_history["test_tot"].append(loss_test.item())
+    loss_history["test_hier"].append(h_infos_test.item() * 0.5)
+    loss_history["test_pheno"].append(p_infos_test.item() * 0.5)
+    
+    loss_history["lr"].append(optimizer.param_groups[0]["lr"] * 1e5)
 
 # Save the model if save is on
 if save == "ON":
     torch.save(model_0.state_dict(), PATH)
     print(f"Model saved successfully to {PATH}")
+    torch.save(loss_history, "src/training/loss_history.pt")
+    print(f"Loss history saved successfully to src/training/loss_history.pt")
 
 

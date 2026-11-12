@@ -22,9 +22,11 @@ h_plot = True # plot the hierarchy of Yukawa singular values at the Planck scale
 p_plot = True # plot the phenomenological constraints on the BSM couplings as a function of Lambda BSM scale
 rg_flow_plot = True # plot the scale variation of the yukawa singular value ratios for Lambda=3TeV
 bsm_matrices_plot = True # plot the BSM coupling matrices at 3TeV and 100TeV
+loss_evol_plot= True # plots the evolution of the loss function components
 
 SAVE_PATH = "plots/" # Set the path to save the plots to
-PATH = "src/training/det_model.pt" # Set the path to the saved model from training.py file
+MODEL_PATH = "src/training/det_model.pt" # Set the path to the saved model from training.py file
+LOSS_PATH = "src/training/loss_history.pt" # Set the path to the saved loss history from training.py file
 # Plot configuartions
 plt.rcParams.update({
     'font.size': 12,
@@ -211,6 +213,30 @@ def plot_bsm_couplings(lambda_q: torch.Tensor, lambda_u: torch.Tensor, lambda_d:
               ['$\\lambda_u \\lambda^{\\dagger}_{u}$', '$\\lambda_d \\lambda^{\\dagger}_{d}$']]
     )
     grid_plot(M_3TeV, titles, PATH, "bsm_matrices_sq")
+
+def plot_loss_evol(loss_dict: dict, PATH:str):
+    epochs = range(len(loss_dict["train_tot"]))
+
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
+    labels = [r'Train: Tot', r'Train: Hierarchy', r'Train: Pheno', r'Test: Tot', r'Test: Hierarchy', r'Test: Pheno', r'$\eta \times 10^{5}$']
+    keys = ["train_tot", "train_hier", "train_pheno", "test_tot", "test_hier", "test_pheno", "lr"]
+
+    plt.figure(figsize=(8, 6))
+    
+    for key, color, label in zip(keys, colors, labels):
+        loss_info = loss_dict[key]
+        plt.plot(epochs, loss_info, label=label, color=color)
+
+    plt.xlabel(r'Epochs')
+    plt.ylabel(r'losses')
+    plt.title(r'Losses vs Epochs')
+    plt.xscale('linear')
+    plt.yscale('linear')
+    plt.legend(frameon=True, bbox_to_anchor=(1, 0.5), loc='center left', edgecolor='black')
+    plt.tight_layout()
+    plt.savefig(PATH + "loss_evolution.pdf", format = 'pdf', bbox_inches='tight')
+    plt.close()
+
     
 
 if __name__ == "__main__":
@@ -223,8 +249,11 @@ if __name__ == "__main__":
 
     # Load the trained model and set to eval mode
     model_loaded = DetModel()
-    model_loaded.load_state_dict(torch.load(PATH, weights_only=True))
+    model_loaded.load_state_dict(torch.load(MODEL_PATH, weights_only=True))
     model_loaded.eval()
+
+    # Load the loss history
+    loss_history = torch.load(LOSS_PATH, weights_only=True)
 
     # Generate a grid of Lambda values for plotting
     sample_size = 1000
@@ -256,3 +285,6 @@ if __name__ == "__main__":
     
     if bsm_matrices_plot == True:
         plot_bsm_couplings(lambda_q, lambda_u, lambda_d, SAVE_PATH)
+    
+    if loss_evol_plot == True:
+        plot_loss_evol(loss_history, SAVE_PATH)
