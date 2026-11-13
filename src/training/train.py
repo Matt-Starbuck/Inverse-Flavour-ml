@@ -30,7 +30,7 @@ model_0 = DetModel(lambda_min=lambda_min, lambda_max=lambda_max).to(device)
 with torch.no_grad():
     for p in model_0.parameters():
         nn.init.normal_(p, mean=0.0, std=0.01)
-optimizer = torch.optim.Adam(model_0.parameters(), lr=1.5e-4)
+optimizer = torch.optim.Adam(model_0.parameters(), lr=1e-4)
 #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=40, min_lr=1e-5)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-5)
 # Quick print test of the sampled Lambda values

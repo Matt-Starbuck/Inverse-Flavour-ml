@@ -10,6 +10,7 @@ from src.physics.bsm_rge import evolve_bsm_batch
 from src.loss_functions.eft_bounds import compute_eft_violation_ratios
 from src.loss_functions.hierarchy_loss import hierarchy_loss
 from src.loss_functions.combined_loss import combined_loss
+from torch.nn import functional as F
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -41,10 +42,10 @@ def main():
     pheno_dict = compute_eft_violation_ratios(lambda_q, lambda_u, lambda_d, log_lambda_batch
     )
     # Santiy check
-    assert pheno_dict["K0"][0] > 1
-    assert pheno_dict["D0"][0] > 1
-    assert pheno_dict["Bd"][0] > 1
-    assert pheno_dict["Bs"][0] > 1
+    assert pheno_dict["Im_K0_l"][0] > 1
+    assert pheno_dict["Im_D0_l"][0] > 1
+    assert pheno_dict["Bd_l"][0] + pheno_dict["Bd_r"][0] > 1
+    assert pheno_dict["Bs_l"][0] + pheno_dict["Bs_r"][0] > 1
     print("[Check 1]: Neutral meson bound saturated at 3 TeV")
 
     # Check the BSM batch evolution to M_Pl is working correctly
@@ -65,17 +66,23 @@ def main():
     # Test of combined loss functions
     theta= 0.5
     total_loss = combined_loss(bsm_init_states, log_lambda_batch,lambda_q,
-              lambda_u, lambda_d, theta=0.5 )
+              lambda_u, lambda_d, theta=theta )
     # Checking that the functions has combined correctly
-    sum_pheno_loss=  (pheno_dict["D0"] + pheno_dict["K0"] + pheno_dict["Bd"] + pheno_dict["Bs"]
-                + pheno_dict["uu"] + pheno_dict["dd"] + pheno_dict["qq"]
-    )
+    sum_pheno_loss= sum(F.softplus(r-0.5, beta=10.0) for r in pheno_dict.values()) 
     
-    sum_hierarchy_loss = hierarchy_dict["up_32"] + hierarchy_dict["up_21"] + hierarchy_dict["down_32"] + hierarchy_dict["down_21"]
-    assert total_loss[0] == theta * sum_hierarchy_loss[0] + (1-theta) * sum_pheno_loss[0]
-    print("[Check 4]: Combined loss asembled correctly")
+    sum_hierarchy_loss = sum(r for r in hierarchy_dict.values())
+
+    pert_loss = (torch.exp(torch.max(torch.abs(lambda_q)) / (2 * torch.pi)) 
+                 + torch.exp(torch.max(torch.abs(lambda_u)) / (2 * torch.pi)) 
+                 + torch.exp(torch.max(torch.abs(lambda_d)) / (2 * torch.pi)) -3)
+    
+    print("Total Loss:", total_loss[0])
+    print("RHS: ", torch.mean(theta * sum_hierarchy_loss + (1-theta) * sum_pheno_loss + pert_loss))
+    
+    assert total_loss[0] == torch.mean(theta * sum_hierarchy_loss + (1-theta) * sum_pheno_loss + pert_loss)
+    print("[Check 4]: Combined loss assembled correctly")
     # 5. Backpropagate gradients to lambda_q, lambda_u, lambda_d
-    mean_loss_batch = total_loss.mean()
+    mean_loss_batch = total_loss[0].mean()
     mean_loss_batch.backward()
     for name, param in [("lambda_q", lambda_q), ("lambda_u", lambda_u), ("lambda_d", lambda_d)]:
         assert param.grad is not None, f"Gradient for {name} is None!"
